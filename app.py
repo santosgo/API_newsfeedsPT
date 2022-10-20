@@ -61,5 +61,4 @@ if __name__ == '__main__' or __name__ == 'app':
     sched = BackgroundScheduler(daemon=True)
     sched.add_job(get_feed_jn, 'interval', seconds=60)
     sched.start()
-    app.run()
     atexit.register(lambda: sched.shutdown())
