@@ -48,7 +48,7 @@ def get_feed_jn():
 
     print('Updating JN completed...')
     global OUT_RESP
-    OUT_RESP = out_resp[:30]
+    OUT_RESP = out_resp[:100]
 
 @app.route('/get_jn')
 def start():
