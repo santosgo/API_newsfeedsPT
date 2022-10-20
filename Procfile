@@ -1,1 +1,1 @@
-web: gunicorn api-newsfeeds-pt:app
+web: gunicorn app:app

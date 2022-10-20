@@ -8,7 +8,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 app = Flask('API_newsfeedsPT')
-server = app.server
 
 OUT_RESP = None
 
