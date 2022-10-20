@@ -56,7 +56,7 @@ def start():
     print(OUT_RESP)
     return OUT_RESP
 
-if __name__ == '__main__':
+if __name__ == '__main__' or __name__ == 'app':
     get_feed_jn()
     sched = BackgroundScheduler(daemon=True)
     sched.add_job(get_feed_jn, 'interval', seconds=60)
