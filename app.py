@@ -39,7 +39,7 @@ def get_feed_jn():
         resp_json_sm.append(item_sm)
         
 
-    if OUT_RESP:
+    if OUT_RESP is not None:
 
         new_feed_df = pd.DataFrame.from_records(resp_json_sm)
 
@@ -68,9 +68,9 @@ def get_feed_jn():
     else:
         out_resp = resp_json_sm
 
-    print('Updating JN completed...')
     OUT_RESP = out_resp[:100]
-    print(OUT_RESP)
+    print('Updating JN completed...')
+
 
 @app.route('/get_jn')
 def start():
@@ -80,7 +80,7 @@ def start():
 
 get_feed_jn()
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(get_feed_jn, 'interval', seconds=10)
+sched.add_job(get_feed_jn, 'interval', seconds=60)
 sched.start()
 atexit.register(lambda: sched.shutdown())
 
