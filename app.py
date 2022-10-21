@@ -5,29 +5,31 @@ import xmltodict
 import ast
 import atexit
 from apscheduler.schedulers.background import BackgroundScheduler
+from manage_db import DB_connection
+import json
+from bson import json_util
 
 
 app = Flask('API_newsfeedsPT')
 
 OUT_RESP = None
-OUT_RESP_DF = None
-
 
 def get_feed_jn():
 
     global OUT_RESP
-    global OUT_RESP_DF
 
     print('Updating JN feed...')
 
-    ## Getting new data in dataframe format
+    ## Establishing mongodb connection
+
+    db_connection = DB_connection()
+
+    ## Getting new rss feed and update in database if not existing
 
     r = requests.get('https://ws.globalnoticias.pt/feed/jn/articles/ultimas/rss')
 
     resp_json = xmltodict.parse(r.text)
     resp_json = resp_json['rss']['channel']['item']
-
-    resp_json_sm = []
 
     for item in resp_json:
         item_sm = {
@@ -36,37 +38,15 @@ def get_feed_jn():
             'categoria': item['category'],
             'pubDate': item['pubDate']
         }
-        resp_json_sm.append(item_sm)
-        
-
-    if OUT_RESP is not None:
-
-        new_feed_df = pd.DataFrame.from_records(resp_json_sm)
-
-        out_resp_json = []
-
-        for item in OUT_RESP:
-            item_json = {
-                'titulo': item['titulo'],
-                'link': item['link'],
-                'categoria': item['categoria'],
-                'pubDate': item['pubDate']
-            }
-            out_resp_json.append(item_json)
-        
-        old_df = pd.DataFrame.from_records(out_resp_json)
+        db_connection.insert_if_not_exists(item_sm)
     
-        old_df.categoria = old_df.categoria.apply(str)
-        new_feed_df.categoria = new_feed_df.categoria.apply(str)
+    ## Get up-to-date set of records from database
 
-        merged_df = pd.merge(old_df, new_feed_df, how="outer", on=["titulo", "link", "categoria", "pubDate"])
-        merged_df = merged_df.sort_values('pubDate', ascending=False).drop_duplicates(subset=['pubDate'])
-        merged_df.categoria = merged_df.categoria.apply(lambda x: ast.literal_eval(x))
+    out_resp = []
 
-        out_resp = merged_df.to_dict(orient="records")
-    
-    else:
-        out_resp = resp_json_sm
+    records = db_connection.newsfeeds_collection.find()
+    for record in records:
+        out_resp.append(record)
 
     OUT_RESP = out_resp[:100]
     print('Updating JN completed...')
@@ -76,7 +56,8 @@ def get_feed_jn():
 def start():
     global OUT_RESP
     print(OUT_RESP)
-    return OUT_RESP
+
+    return json.loads(json_util.dumps(OUT_RESP))
 
 get_feed_jn()
 sched = BackgroundScheduler(daemon=True)
