@@ -1,4 +1,5 @@
 from flask import Flask
+import pymongo
 import requests
 import pandas as pd
 import xmltodict
@@ -44,7 +45,7 @@ def get_feed_jn():
 
     out_resp = []
 
-    records = db_connection.newsfeeds_collection.find()
+    records = db_connection.newsfeeds_collection.find().sort('pubDate', pymongo.DESCENDING).limit(100)
     for record in records:
         out_resp.append(record)
 
