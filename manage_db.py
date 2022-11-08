@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import pymongo
 from dotenv import load_dotenv
 import os
@@ -30,3 +31,7 @@ class DB_connection():
             {"$set": json_record},
             upsert=True
         )
+    
+    def clean_older_1wk(self):
+        one_week_ago =  datetime.today() - timedelta(7)
+        self.newsfeeds_collection.delete_many( { 'pubDate' : {'$lt' : one_week_ago } }) 

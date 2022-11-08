@@ -41,6 +41,8 @@ def get_feed_jn():
         }
         db_connection.insert_if_not_exists(item_sm)
     
+    db_connection.clean_older_1wk()
+
     ## Get up-to-date set of records from database
 
     out_resp = []
@@ -49,7 +51,7 @@ def get_feed_jn():
     for record in records:
         out_resp.append(record)
 
-    OUT_RESP = out_resp[:100]
+    OUT_RESP = out_resp
     print('Updating JN completed...')
 
 
